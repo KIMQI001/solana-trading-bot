@@ -23,11 +23,11 @@ export class BlackFilter implements Filter {
 
       logger.info(
         { mint: deserialize.mintAuthority.toString() },
-        `xxxddddd`,
+        `mint authority`,
       );
       logger.info(
         { mint: blacklist },
-        `ssssss`,
+        `🐶`,
       );
       const message = [ renounced ? undefined : 'mint' ].filter((e) => e !== undefined);
       const ok = renounced
