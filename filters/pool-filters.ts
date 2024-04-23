@@ -5,6 +5,8 @@ import { BurnFilter } from './burn.filter';
 import { MutableFilter } from './mutable.filter';
 import { RenouncedFreezeFilter } from './renounced.filter';
 import { PoolSizeFilter } from './pool-size.filter';
+import { BlackFilter } from './black.filter';
+
 import { CHECK_IF_BURNED, CHECK_IF_FREEZABLE, CHECK_IF_MINT_IS_RENOUNCED, CHECK_IF_MUTABLE, logger } from '../helpers';
 
 export interface Filter {
@@ -29,6 +31,8 @@ export class PoolFilters {
     readonly connection: Connection,
     readonly args: PoolFilterArgs,
   ) {
+    this.filters.push(new BlackFilter(connection));
+
     if (CHECK_IF_BURNED) {
       this.filters.push(new BurnFilter(connection));
     }
