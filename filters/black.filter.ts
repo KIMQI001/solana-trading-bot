@@ -11,7 +11,7 @@ export class BlackFilter implements Filter {
     try {
       const accountInfo = await this.connection.getAccountInfo(poolKeys.baseMint, this.connection.commitment);
       if (!accountInfo?.data) {
-        return { ok: false, message: 'RenouncedFreeze -> Failed to fetch account data' };
+        return { ok: false, message: 'BlackFilter -> Failed to fetch account data' };
       }
 
       const deserialize = MintLayout.decode(accountInfo.data);
@@ -20,11 +20,11 @@ export class BlackFilter implements Filter {
       const message = [ renounced ? undefined : 'mint' ].filter((e) => e !== undefined);
       const ok = renounced
 
-      return { ok: ok, message: ok ? undefined : `RenouncedFreeze -> Creator can ${message.join(' and ')} tokens` };
+      return { ok: ok, message: ok ? undefined : `BlackFilter -> Creator is in blacklist` };
     } catch (e) {
-      logger.error({ mint: poolKeys.baseMint }, `RenouncedFreeze -> Failed to check if creator can tokens`);
+      logger.error({ mint: poolKeys.baseMint }, `BlackFilter -> Failed to check if blackcreator  1`);
     }
 
-    return { ok: false, message: `RenouncedFreeze -> Failed to check if creator  tokens` };
+    return { ok: false, message: `BlackFilter -> Failed to check if blackcreator  2` };
   }
 }
