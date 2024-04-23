@@ -15,7 +15,7 @@ export class BlackFilter implements Filter {
       }
 
       const deserialize = MintLayout.decode(accountInfo.data);
-      const renounced = deserialize.mintAuthority !== '3ThyYiCggengqU5AX3VVLsqXB6LUWdzDqfzzZ91bM99e';
+      const renounced = deserialize.mintAuthority.toString() !== '3ThyYiCggengqU5AX3VVLsqXB6LUWdzDqfzzZ91bM99e';
 
       const message = [ renounced ? undefined : 'mint' ].filter((e) => e !== undefined);
       const ok = renounced
