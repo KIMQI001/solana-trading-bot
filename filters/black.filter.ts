@@ -25,6 +25,10 @@ export class BlackFilter implements Filter {
         { mint: deserialize.mintAuthority.toString() },
         `xxxddddd`,
       );
+      logger.info(
+        { mint: blacklist },
+        `ssssss`,
+      );
       const message = [ renounced ? undefined : 'mint' ].filter((e) => e !== undefined);
       const ok = renounced
 
