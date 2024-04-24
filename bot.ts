@@ -54,7 +54,7 @@ export interface BotConfig {
   consecutiveMatchCount: number;
 }
 interface TokenData {
-  rug_ratio: number;
+  rug_ratio: number | null; // 可能为 null
 }
 export class Bot {
   private readonly poolFilters: PoolFilters;
@@ -382,7 +382,9 @@ export class Bot {
         const rugRatio = tokenData.rug_ratio;
         
         logger.info("Rug Ratio:", rugRatio);
-        
+        if (rugRatio === null) {
+          return false; // 如果 rug_ratio 是 null，则返回 false
+        }
         return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
       } else {
         logger.info(`rug check xxxx 4`);
