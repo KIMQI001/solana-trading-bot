@@ -23,6 +23,11 @@ import { Mutex } from 'async-mutex';
 import BN from 'bn.js';
 import { WarpTransactionExecutor } from './transactions/warp-transaction-executor';
 import { JitoTransactionExecutor } from './transactions/jito-rpc-transaction-executor';
+import fetch from 'node-fetch';
+
+interface TokenData {
+  rug_ratio: number;
+}
 
 export interface BotConfig {
   wallet: Keypair;
@@ -135,6 +140,14 @@ export class Bot {
       const poolKeys: LiquidityPoolKeysV4 = createPoolKeys(accountId, poolState, market);
 
       if (!this.config.useSnipeList) {
+        // rug_ratio check
+        const rug = await this.rugCheck(poolKeys);
+
+        if (rug) {
+          logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because creator rug_ratio so high`);
+          return;
+        }
+
         const match = await this.filterMatch(poolKeys);
 
         if (!match) {
@@ -352,6 +365,36 @@ export class Bot {
     transaction.sign([wallet, ...innerTransaction.signers]);
 
     return this.txExecutor.executeAndConfirm(transaction, wallet, latestBlockhash);
+  }
+
+  private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
+    try {
+      // 构建 API 请求 URL
+      const apiUrl = 'https://gmgn.ai/defi/quotation/v1/tokens/sol/poolKeys';
+
+      // 发起 API 请求
+      const response = await fetch(apiUrl);
+      
+      // 检查请求是否成功
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      // 解析 JSON 响应
+      const responseData: { data: TokenData } = await response.json();
+
+      // 获取 rug_ratio 字段
+      const rugRatio = responseData.data.rug_ratio;
+
+      // 比较 rug_ratio 是否大于 0.5
+      if (rugRatio > 0.5) {
+        return true
+      } else {
+        return false
+      }
+    } catch (error) {
+      logger.error('An error occurred while fetching or processing data:', error);
+    }
   }
 
   private async filterMatch(poolKeys: LiquidityPoolKeysV4) {
