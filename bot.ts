@@ -138,8 +138,8 @@ export class Bot {
 
       if (!this.config.useSnipeList) {
         // rug_ratio check
+        
         const rug = await this.rugCheck(poolKeys);
-
         if (rug) {
           logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because creator rug_ratio so high`);
           return;
@@ -366,35 +366,36 @@ export class Bot {
 
   private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
     const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys.baseMint}`;
-    const times = 3
-    let checkTime = 0
-    do{
+    let nullCount = 0; // 记录 rug_ratio 为 null 的次数
+  
+    while (nullCount < 3) { // 当 nullCount 小于 3 时执行
       try {
         const response = await fetch(url);
         const data = await response.json();
-
+  
         if (data.code === 0 && data.msg === "success") {
           const tokenData: TokenData = data.data.token;
           const rugRatio = tokenData.rug_ratio;
-
+  
           logger.debug(
             { mint: poolKeys.baseMint.toString() },
             `Rug Ratio: ${rugRatio}}`,
           );
-
+  
           if (rugRatio === null) {
-            return false; // 如果 rug_ratio 是 null，则返回 false
+            nullCount++; // 如果 rug_ratio 是 null，增加 nullCount 计数
+            await sleep(1000); // 等待 1 秒
+          } else {
+            return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
           }
-          return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
         }
-        await sleep(this.config.filterCheckInterval);
       } catch (error) {
         logger.error("Error fetching data from API:", error);
         return true;
-      }finally {
-        checkTime++;
-      }
-    }while (checkTime < times);
+      } 
+    }
+  
+    return false; // 当 nullCount 达到 3 次时，返回 false
   }
 
   private async filterMatch(poolKeys: LiquidityPoolKeysV4) {
