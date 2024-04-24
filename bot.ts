@@ -23,11 +23,6 @@ import { Mutex } from 'async-mutex';
 import BN from 'bn.js';
 import { WarpTransactionExecutor } from './transactions/warp-transaction-executor';
 import { JitoTransactionExecutor } from './transactions/jito-rpc-transaction-executor';
-import fetch from 'node-fetch';
-
-interface TokenData {
-  rug_ratio: number;
-}
 
 export interface BotConfig {
   wallet: Keypair;
@@ -58,7 +53,9 @@ export interface BotConfig {
   filterCheckDuration: number;
   consecutiveMatchCount: number;
 }
-
+interface TokenData {
+  rug_ratio: number;
+}
 export class Bot {
   private readonly poolFilters: PoolFilters;
 
@@ -368,32 +365,25 @@ export class Bot {
   }
 
   private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
+    const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys}`;
+  
     try {
-      // 构建 API 请求 URL
-      const apiUrl = 'https://gmgn.ai/defi/quotation/v1/tokens/sol/poolKeys';
-
-      // 发起 API 请求
-      const response = await fetch(apiUrl);
+      const response = await fetch(url);
+      const data = await response.json();
       
-      // 检查请求是否成功
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      // 解析 JSON 响应
-      const responseData: { data: TokenData } = await response.json();
-
-      // 获取 rug_ratio 字段
-      const rugRatio = responseData.data.rug_ratio;
-
-      // 比较 rug_ratio 是否大于 0.5
-      if (rugRatio > 0.5) {
-        return true
+      if (data.code === 0 && data.msg === "success") {
+        const tokenData: TokenData = data.data.token;
+        const rugRatio = tokenData.rug_ratio;
+        
+        logger.info("Rug Ratio:", rugRatio);
+        
+        return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
       } else {
-        return false
+        return false;
       }
     } catch (error) {
-      logger.error('An error occurred while fetching or processing data:', error);
+      logger.error("Error fetching data from API:", error);
+      return true;
     }
   }
 
