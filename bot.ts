@@ -366,30 +366,35 @@ export class Bot {
 
   private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
     const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys.baseMint}`;
+    const times = 3
+    let checkTime = 0
+    do{
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-    try {
+        if (data.code === 0 && data.msg === "success") {
+          const tokenData: TokenData = data.data.token;
+          const rugRatio = tokenData.rug_ratio;
 
-      const response = await fetch(url);
-      const data = await response.json();
+          logger.debug(
+            { mint: poolKeys.baseMint.toString() },
+            `Rug Ratio: ${rugRatio}}`,
+          );
 
-      if (data.code === 0 && data.msg === "success") {
-        const tokenData: TokenData = data.data.token;
-        const rugRatio = tokenData.rug_ratio;
-
-        logger.debug(
-          { mint: poolKeys.baseMint.toString() },
-          `Rug Ratio: ${rugRatio}}`,
-        );
-
-        if (rugRatio === null) {
-          return false; // 如果 rug_ratio 是 null，则返回 false
+          if (rugRatio === null) {
+            return false; // 如果 rug_ratio 是 null，则返回 false
+          }
+          return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
         }
-        return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
+        await sleep(this.config.filterCheckInterval);
+      } catch (error) {
+        logger.error("Error fetching data from API:", error);
+        return true;
+      }finally {
+        checkTime++;
       }
-    } catch (error) {
-      logger.error("Error fetching data from API:", error);
-      return true;
-    }
+    }while (checkTime < times);
   }
 
   private async filterMatch(poolKeys: LiquidityPoolKeysV4) {
