@@ -137,6 +137,7 @@ export class Bot {
       const poolKeys: LiquidityPoolKeysV4 = createPoolKeys(accountId, poolState, market);
 
       if (!this.config.useSnipeList) {
+        logger.info(`check xxxx`);
         // rug_ratio check
         const rug = await this.rugCheck(poolKeys);
 
