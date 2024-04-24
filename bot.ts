@@ -381,8 +381,7 @@ export class Bot {
 
           logger.debug(
             { mint: poolKeys.baseMint.toString() },
-            `Rug Ratio: ${rugRatio}`,
-            `holderCount: ${holderCount}`
+            `Rug Ratio: ${rugRatio} and holderCount: ${holderCount}`
           );
   
           if (holderCount < 80) {
