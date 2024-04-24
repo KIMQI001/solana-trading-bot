@@ -152,6 +152,13 @@ export class Bot {
           logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because pool doesn't match filters`);
           return;
         }
+
+        const holder = await this.holderCheck(poolKeys);
+        if (holder) {
+          logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because holders  so low`);
+          return;
+        }
+
       }
 
       for (let i = 0; i < this.config.maxBuyRetries; i++) {
@@ -396,23 +403,33 @@ export class Bot {
         return true;
       } 
     }
-    const response1 = await fetch(url);
-    const data2 = await response1.json();
 
-    if (data2.code === 0 && data2.msg === "success") {
-      const tokenData: TokenData = data2.data.token;
-      const rugRatio = tokenData.rug_ratio;
-      const holderCount = tokenData.holder_count;
+    return false; // 当 nullCount 达到 3 次时，返回 false
+  }
 
-      logger.debug(
-        { mint: poolKeys.baseMint.toString() },
-        ` holderCount: ${holderCount}`
-      );
+  private async holderCheck(poolKeys: LiquidityPoolKeysV4) {
+    const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys.baseMint}`;
+  
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
 
-      if (holderCount < 80) {
-        return true
+      if (data.code === 0 && data.msg === "success") {
+        const tokenData: TokenData = data.data.token;
+        const holderCount = tokenData.holder_count;
+
+        logger.debug(
+          { mint: poolKeys.baseMint.toString() },
+          `holderCount: ${holderCount}`
+        );
+
+        return holderCount < 80; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
+        
       }
-    }
+    } catch (error) {
+      logger.error("Error fetching data from API:", error);
+      return true;
+    } 
 
     return false; // 当 nullCount 达到 3 次时，返回 false
   }
