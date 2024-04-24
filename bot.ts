@@ -384,9 +384,6 @@ export class Bot {
             `Rug Ratio: ${rugRatio} and holderCount: ${holderCount}`
           );
   
-          if (holderCount < 80) {
-            return true
-          }
           if (rugRatio === null) {
             nullCount++; // 如果 rug_ratio 是 null，增加 nullCount 计数
             await sleep(1000); // 等待 1 秒
@@ -399,7 +396,24 @@ export class Bot {
         return true;
       } 
     }
-  
+    const response1 = await fetch(url);
+    const data2 = await response1.json();
+
+    if (data2.code === 0 && data2.msg === "success") {
+      const tokenData: TokenData = data2.data.token;
+      const rugRatio = tokenData.rug_ratio;
+      const holderCount = tokenData.holder_count;
+
+      logger.debug(
+        { mint: poolKeys.baseMint.toString() },
+        ` holderCount: ${holderCount}`
+      );
+
+      if (holderCount < 80) {
+        return true
+      }
+    }
+
     return false; // 当 nullCount 达到 3 次时，返回 false
   }
 
