@@ -366,15 +366,15 @@ export class Bot {
   }
 
   private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
-    const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys}`;
+    const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys.baseMint}`;
     logger.info(`rug check xxxx 1`);
 
     try {
-      logger.info(`rug check xxxx 2`);
+      logger.info( { mint: url.toString() },`rug check xxxx 2`);
 
       const response = await fetch(url);
       const data = await response.json();
-      logger.info(`rug check xxxx 3`);
+      logger.info( { mint: data.toString() },`rug check xxxx 3`);
 
       if (data.code === 0 && data.msg === "success") {
         const tokenData: TokenData = data.data.token;
