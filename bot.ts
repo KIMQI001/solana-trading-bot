@@ -137,7 +137,6 @@ export class Bot {
       const poolKeys: LiquidityPoolKeysV4 = createPoolKeys(accountId, poolState, market);
 
       if (!this.config.useSnipeList) {
-        logger.info(`check xxxx`);
         // rug_ratio check
         const rug = await this.rugCheck(poolKeys);
 
@@ -367,29 +366,25 @@ export class Bot {
 
   private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
     const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys.baseMint}`;
-    logger.info(`rug check xxxx 1`);
 
     try {
-      logger.info( { mint: url.toString() },`rug check xxxx 2`);
 
       const response = await fetch(url);
       const data = await response.json();
-      logger.info( { mint: data.msg.toString() },`rug check xxxx 3`);
-      logger.info( { mint: data.code.toString() },`rug check xxxx 4`);
 
       if (data.code === 0 && data.msg === "success") {
         const tokenData: TokenData = data.data.token;
         const rugRatio = tokenData.rug_ratio;
-        
-        logger.info("Rug Ratio:", rugRatio);
+
+        logger.debug(
+          { mint: poolKeys.baseMint.toString() },
+          `Rug Ratio: ${rugRatio}}`,
+        );
+
         if (rugRatio === null) {
           return false; // 如果 rug_ratio 是 null，则返回 false
         }
         return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
-      } else {
-        logger.info(`rug check xxxx 4`);
-
-        return false;
       }
     } catch (error) {
       logger.error("Error fetching data from API:", error);
