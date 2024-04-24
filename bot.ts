@@ -381,7 +381,7 @@ export class Bot {
 
           logger.debug(
             { mint: poolKeys.baseMint.toString() },
-            `Rug Ratio: ${rugRatio}}`,
+            `Rug Ratio: ${rugRatio}`,
             `holderCount: ${holderCount}`
           );
   
