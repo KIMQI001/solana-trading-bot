@@ -374,7 +374,8 @@ export class Bot {
 
       const response = await fetch(url);
       const data = await response.json();
-      logger.info( { mint: data.toString() },`rug check xxxx 3`);
+      logger.info( { mint: data.msg.toString() },`rug check xxxx 3`);
+      logger.info( { mint: data.code.toString() },`rug check xxxx 4`);
 
       if (data.code === 0 && data.msg === "success") {
         const tokenData: TokenData = data.data.token;
