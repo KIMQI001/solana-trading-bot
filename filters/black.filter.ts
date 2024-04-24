@@ -21,14 +21,14 @@ export class BlackFilter implements Filter {
       //const renounced = deserialize.mintAuthority.toString() !== '3ThyYiCggengqU5AX3VVLsqXB6LUWdzDqfzzZ91bM99e';
       const renounced = !blacklist.includes(deserialize.mintAuthority.toString());
 
-      logger.info(
-        { mint: deserialize.mintAuthority.toString() },
-        `mint authority`,
-      );
-      logger.info(
-        { mint: blacklist },
-        `🐶`,
-      );
+    //   logger.info(
+    //     { mint: deserialize.mintAuthority.toString() },
+    //     `mint authority`,
+    //   );
+    //   logger.info(
+    //     { mint: blacklist },
+    //     `🐶`,
+    //   );
       const message = [ renounced ? undefined : 'mint' ].filter((e) => e !== undefined);
       const ok = renounced
 
