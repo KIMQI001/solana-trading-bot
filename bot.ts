@@ -367,11 +367,15 @@ export class Bot {
 
   private async rugCheck(poolKeys: LiquidityPoolKeysV4) {
     const url = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${poolKeys}`;
-  
+    logger.info(`rug check xxxx 1`);
+
     try {
+      logger.info(`rug check xxxx 2`);
+
       const response = await fetch(url);
       const data = await response.json();
-      
+      logger.info(`rug check xxxx 3`);
+
       if (data.code === 0 && data.msg === "success") {
         const tokenData: TokenData = data.data.token;
         const rugRatio = tokenData.rug_ratio;
@@ -380,6 +384,8 @@ export class Bot {
         
         return rugRatio > 0.5; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
       } else {
+        logger.info(`rug check xxxx 4`);
+
         return false;
       }
     } catch (error) {
