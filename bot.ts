@@ -55,6 +55,7 @@ export interface BotConfig {
 }
 interface TokenData {
   rug_ratio: number | null; // 可能为 null
+  holder_count: number
 }
 export class Bot {
   private readonly poolFilters: PoolFilters;
@@ -376,12 +377,17 @@ export class Bot {
         if (data.code === 0 && data.msg === "success") {
           const tokenData: TokenData = data.data.token;
           const rugRatio = tokenData.rug_ratio;
-  
+          const holderCount = tokenData.holder_count;
+
           logger.debug(
             { mint: poolKeys.baseMint.toString() },
             `Rug Ratio: ${rugRatio}}`,
+            `holderCount: ${holderCount}`
           );
   
+          if (holderCount < 80) {
+            return true
+          }
           if (rugRatio === null) {
             nullCount++; // 如果 rug_ratio 是 null，增加 nullCount 计数
             await sleep(1000); // 等待 1 秒
