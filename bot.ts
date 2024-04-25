@@ -18,7 +18,7 @@ import { Liquidity, LiquidityPoolKeysV4, LiquidityStateV4, Percent, Token, Token
 import { MarketCache, PoolCache, SnipeListCache } from './cache';
 import { PoolFilters } from './filters';
 import { TransactionExecutor } from './transactions';
-import { createPoolKeys, logger, NETWORK, sleep } from './helpers';
+import { CHECK_IF_RATS,createPoolKeys, logger, NETWORK, sleep } from './helpers';
 import { Mutex } from 'async-mutex';
 import BN from 'bn.js';
 import { WarpTransactionExecutor } from './transactions/warp-transaction-executor';
@@ -29,6 +29,7 @@ export interface BotConfig {
   checkRenounced: boolean;
   checkFreezable: boolean;
   checkBurned: boolean;
+  checkRats: boolean;
   minPoolSize: TokenAmount;
   maxPoolSize: TokenAmount;
   quoteToken: Token;
@@ -56,6 +57,14 @@ export interface BotConfig {
 interface TokenData {
   rug_ratio: number | null; // 可能为 null
   holder_count: number
+}
+interface TokenStat {
+  signal_count: number,
+  degen_call_count: number,
+  rat_trader_count: number,
+  top_rat_trader_count: number,
+  top_smart_degen_count: number,
+  top_rat_trader_amount_percentage: number
 }
 export class Bot {
   private readonly poolFilters: PoolFilters;
@@ -157,6 +166,15 @@ export class Bot {
         if (holder) {
           logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because holders  so low`);
           return;
+        }
+
+        // rats check
+        if (CHECK_IF_RATS){
+          const rats = await this.ratsCheck(poolKeys);
+          if (!rats) {
+            logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because rats  so low`);
+            return;
+          }
         }
 
       }
@@ -433,6 +451,40 @@ export class Bot {
 
     return false; // 当 nullCount 达到 3 次时，返回 false
   }
+
+  private async ratsCheck(poolKeys: LiquidityPoolKeysV4) {
+    const url = `https://gmgn.ai/defi/quotation/v1/tokens/stats/sol/${poolKeys.baseMint}`;
+  
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.code === 0 && data.msg === "success") {
+        const tokenStat: TokenStat = data.data;
+        const ratsPct = tokenStat.top_rat_trader_amount_percentage;
+        const ratsCnt = tokenStat.top_rat_trader_count
+
+        logger.debug(
+          { mint: poolKeys.baseMint.toString() },
+          `top_rat_trader_amount_percentage: ${ratsPct}`
+        );
+
+
+        if (ratsPct > 0.80){
+          return ratsCnt > 79
+        }else{
+          return false
+        }
+        
+      }
+    } catch (error) {
+      logger.error("Error fetching data from API:", error);
+      return false;
+    } 
+
+    return false; 
+  }
+
 
   private async filterMatch(poolKeys: LiquidityPoolKeysV4) {
     if (this.config.filterCheckInterval === 0 || this.config.filterCheckDuration === 0) {
