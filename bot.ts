@@ -57,6 +57,9 @@ export interface BotConfig {
 interface TokenData {
   rug_ratio: number | null; // 可能为 null
   holder_count: number
+  pool_info: {
+    initial_quote_reserve: number;
+  };
 }
 interface TokenStat {
   signal_count: number,
@@ -435,13 +438,25 @@ export class Bot {
       if (data.code === 0 && data.msg === "success") {
         const tokenData: TokenData = data.data.token;
         const holderCount = tokenData.holder_count;
+        const initSol = tokenData.pool_info.initial_quote_reserve;
 
         logger.debug(
           { mint: poolKeys.baseMint.toString() },
           `holderCount: ${holderCount}`
         );
+        if (!this.config.checkRats){
+          if (initSol > 50){
+            return holderCount < 80; 
+          }else{
+            logger.debug(
+              { mint: poolKeys.baseMint.toString() },
+              `initSol: ${initSol} is so low`);
+              return true
+          }
+        }
 
-        return holderCount < 80; // 如果 rug_ratio 大于 0.5，则返回 true，否则返回 false
+
+        return holderCount < 80; 
         
       }
     } catch (error) {
