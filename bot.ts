@@ -18,7 +18,7 @@ import { Liquidity, LiquidityPoolKeysV4, LiquidityStateV4, Percent, Token, Token
 import { MarketCache, PoolCache, SnipeListCache } from './cache';
 import { PoolFilters } from './filters';
 import { TransactionExecutor } from './transactions';
-import { CHECK_IF_RATS,createPoolKeys, logger, NETWORK, sleep } from './helpers';
+import { createPoolKeys, logger, NETWORK, sleep } from './helpers';
 import { Mutex } from 'async-mutex';
 import BN from 'bn.js';
 import { WarpTransactionExecutor } from './transactions/warp-transaction-executor';
@@ -169,7 +169,7 @@ export class Bot {
         }
 
         // rats check
-        if (CHECK_IF_RATS){
+        if (this.config.checkRats){
           const rats = await this.ratsCheck(poolKeys);
           if (!rats) {
             logger.trace({ mint: poolKeys.baseMint.toString() }, `Skipping buy because rats  so low`);
