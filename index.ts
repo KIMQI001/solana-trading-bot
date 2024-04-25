@@ -45,6 +45,7 @@ import {
   FILTER_CHECK_INTERVAL,
   FILTER_CHECK_DURATION,
   CONSECUTIVE_FILTER_MATCHES,
+  CHECK_IF_RATS,
 } from './helpers';
 import { version } from './package.json';
 import { WarpTransactionExecutor } from './transactions/warp-transaction-executor';
@@ -168,6 +169,7 @@ const runListener = async () => {
     quoteAta: getAssociatedTokenAddressSync(quoteToken.mint, wallet.publicKey),
     checkRenounced: CHECK_IF_MINT_IS_RENOUNCED,
     checkFreezable: CHECK_IF_FREEZABLE,
+    checkRats: CHECK_IF_RATS,
     checkBurned: CHECK_IF_BURNED,
     minPoolSize: new TokenAmount(quoteToken, MIN_POOL_SIZE, false),
     maxPoolSize: new TokenAmount(quoteToken, MAX_POOL_SIZE, false),
