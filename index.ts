@@ -127,6 +127,7 @@ function printDetails(wallet: Keypair, quoteToken: Token, bot: Bot) {
     logger.info(`Consecutive filter matches: ${botConfig.consecutiveMatchCount}`);
     logger.info(`Check renounced: ${botConfig.checkRenounced}`);
     logger.info(`Check freezable: ${botConfig.checkFreezable}`);
+    logger.info(`Check rats: ${botConfig.checkRats}`);
     logger.info(`Check burned: ${botConfig.checkBurned}`);
     logger.info(`Min pool size: ${botConfig.minPoolSize.toFixed()}`);
     logger.info(`Max pool size: ${botConfig.maxPoolSize.toFixed()}`);
